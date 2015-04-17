@@ -2,14 +2,17 @@ import importlib
 
 from django.template.base import Template as TemplateBase, TemplateEncodingError
 from django.utils.encoding import force_text
-from engine_minify import settings
+from template_minify import settings
 
 
 _MINIFIER = None
 
 def get_minifier():
-    """ get the class for minify from settings HTML_MINIFIER
+    """ 
+        get the object for minify from settings HTML_MINIFIER
     """
+    
+    global _MINIFIER
 
     if not _MINIFIER:
         html_minifier = getattr(settings, 'HTML_MINIFIER', None)
@@ -19,6 +22,7 @@ def get_minifier():
         module = importlib.import_module(mod_path)
         Minifier = getattr(module, cls_name)
         _MINIFIER = Minifier()
+
     return _MINIFIER
 
 
@@ -32,21 +36,25 @@ class Template(TemplateBase):
         New template for apply a minify to the templates
     """
 
-    def __init__(self, template_string, *args, **kwargs):
+    def __init__(self, template_string, origin=None, name=None, 
+                 *args, **kwargs):
+        
         try:
             template = force_text(template_string)
+            print name
             template = self._minify(template)
             self._template_minify = template
         except UnicodeDecodeError:
             raise TemplateEncodingError("Templates can only be constructed "
                                         "from unicode or UTF-8 strings.")
-        super(Template,self).__init__(template,*args, **kwargs)
+        super(Template,self).__init__(template, origin, name,*args, **kwargs)
 
     def _minify(self, template_string):
 
         """
             get the minifier and return string with template minify
         """
+
         minify = get_minifier()
         minify.html = template_string
         return minify.minify()

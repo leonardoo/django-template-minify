@@ -2,7 +2,7 @@
 import django
 from django.template.base import TemplateDoesNotExist
 
-from engine_minify.template.base import Template
+from template_minify.template.base import Template
 
 
 class LoaderMixin(object):
